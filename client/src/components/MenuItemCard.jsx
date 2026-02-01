@@ -48,7 +48,11 @@ const MenuItemCard = ({
           {/* Availability Toggle */}
           <label className="flex items-center gap-1 text-xs">
             <input
-              onChange={() => onToggleAvailability(item._id, !item.isAvailable)}
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) => {
+                e.stopPropagation();
+                onToggleAvailability(item._id, !item.isAvailable);
+              }}
               type="checkbox"
               checked={item.isAvailable}
               className="accent-green-600 cursor-pointer"
