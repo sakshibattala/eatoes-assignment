@@ -10,8 +10,8 @@ export const getAllMenuItems = async (req, res) => {
 
     if (category) filter.category = category;
 
-    if (isAvailable !== undefined) {
-      filter.isAvailable = availability === "true";
+    if (isAvailable !== undefined && isAvailable !== "") {
+      filter.isAvailable = isAvailable === "true";
     }
 
     if (minPrice || maxPrice) {
@@ -36,24 +36,33 @@ export const searchMenuItems = async (req, res) => {
   try {
     const { q } = req.query;
 
-    if (!q) {
+    if (!q || q.trim() === "") {
       return res.status(400).json({
         success: false,
-        msg: "search query is empty or type something",
+        msg: "Please enter a search query",
       });
     }
 
-    const menuItems = await MenuItemModel.find(
+    //  Text Search first
+    let results = await MenuItemModel.find(
       { $text: { $search: q } },
       { score: { $meta: "textScore" } },
     ).sort({ score: { $meta: "textScore" } });
 
-    console.log(menuItems);
+    //  If no results, fallback to regex (partial search)
+    if (results.length === 0) {
+      results = await MenuItemModel.find({
+        $or: [
+          { name: { $regex: q, $options: "i" } },
+          { ingredients: { $regex: q, $options: "i" } },
+        ],
+      });
+    }
 
     res.status(200).json({
       success: true,
-      data: menuItems,
-      count: menuItems.length,
+      count: results.length,
+      data: results,
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

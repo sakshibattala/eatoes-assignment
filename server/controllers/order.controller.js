@@ -4,7 +4,7 @@ import { validationResult } from "express-validator";
 
 export const getAllOrders = async (req, res) => {
   try {
-    const { status, page = 1, limit = 5 } = req.query;
+    const { status, page = 1, limit = 6 } = req.query;
     const filter = {};
 
     if (status) filter.status = status;
@@ -71,6 +71,8 @@ export const createOrder = async (req, res) => {
       });
     }
 
+    console.log(req.body)
+
     const { items, totalAmount, status, customerName, tableNumber } = req.body;
 
     const orderNumber = "ORD-" + Math.floor(100000 + Math.random() * 900000);
@@ -83,6 +85,8 @@ export const createOrder = async (req, res) => {
       customerName,
       tableNumber,
     });
+
+    console.log(newOrder);
 
     return res.status(201).json({
       success: true,
